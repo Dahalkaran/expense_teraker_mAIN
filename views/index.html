@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Scheduler</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <h1>Schedule a Meeting</h1>
+  
+  <div id="slots">
+    <!-- Slots will be  here using JavaScript -->
+  </div>
+
+  <h2>Scheduled Meetings</h2>
+  <div id="meetings">
+    <!-- Scheduled meetings will be here using JavaScript -->
+  </div>
+
+  <!-- Booking Modal -->
+  <div id="booking-modal" style="display: none;">
+    <h3>Book a Slot</h3>
+    <form id="booking-form">
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="email" name="email" placeholder="Your Email" required>
+      <input type="hidden" name="slotId" id="slotId">
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
