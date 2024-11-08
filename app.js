@@ -1,24 +1,24 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
-const meetingRoutes = require('./routes/meetingRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
+// Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
-//app.use(express.static('public'));  // Serve static files
-
+app.use(express.json()); // Built-in middleware to parse JSON
 app.use(express.static('public'));
+app.use(express.static('views'));
+// Routes
+app.use(userRoutes);
 
-app.use('/', meetingRoutes);
-
-// Sync models with the database
+// Sync the database and start the server
 sequelize.sync()
   .then(() => {
-    console.log('Database & tables created!');
+    console.log('Database synced');
+    app.listen(3000, () => {
+      console.log('Server is running on http://localhost:3000');
+    });
   })
-  .catch(err => console.log('Error syncing database: ', err));
-
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
+  .catch(err => console.log(err));
