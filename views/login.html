@@ -4,53 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/styles.css">
-  <title>Signup</title>
+  <title>Login</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-  <h1>Signup</h1>
-  <form id="signupForm" action="/signup" method="POST">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <br>
+  <h1>Login</h1>
+  <form id="loginForm">
     <label for="email">Email:</label>
     <input type="email" id="email" name="email" required>
     <br>
     <label for="password">Password:</label>
     <input type="password" id="password" name="password" required>
     <br>
-    <button type="submit">Sign Up</button>
+    <button type="submit">Log In</button>
     <p id="error-message" style="color: red; display: none;"></p>
   </form>
-  <p>
-    Already have an account? <a href="/login">Log in here</a>
-  </p>
+
   <script>
-    document.getElementById('signupForm').onsubmit = async function(event) {
-      event.preventDefault(); // Prevent the default form submission
-       // Hide any previous error message
+    document.getElementById('loginForm').onsubmit = async function(event) {
+      event.preventDefault();
+
       const errorMessage = document.getElementById('error-message');
       errorMessage.style.display = 'none';
-      // Collect form data
-      const name = document.getElementById('name').value;
+
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
       try {
-        // Send data to server using Axios
-        const response = await axios.post('/signup', {
-          name: name,
-          email: email,
-          password: password
-        });
+        const response = await axios.post('/login', { email, password });
+        alert(response.data.message);
+        
+        // After successful login in login form
+        localStorage.setItem('isLoggedIn', true);
+        window.location.href = '/expenses/view';
 
-        // Redirect or show a message on success
-        window.location.href = '/signup-success.html';
+        //window.location.href = '/dashboard.html'; // Redirect to dashboard or home on success
       } catch (error) {
-        //console.error('Error creating user:', error);
-       
-      // Display an error message if the email is already registered
-      if (error.response && error.response.data && error.response.data.error) {
+        if (error.response && error.response.data && error.response.data.error) {
           errorMessage.textContent = error.response.data.error;
         } else {
           errorMessage.textContent = 'An error occurred. Please try again.';
