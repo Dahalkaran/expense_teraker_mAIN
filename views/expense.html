@@ -33,40 +33,51 @@
   <ul id="expenseList"></ul>
 
   <script>
-    // Check if user is logged in (assume a token or session check)
-    if (!localStorage.getItem('isLoggedIn')) {
+   
+
+    window.onload = async function() {
+  try {
+    const token = localStorage.getItem('token'); // Retrieve the token
+    if (!token) {
       alert('Please log in first');
       window.location.href = '/login';
+      return;
     }
 
-    // Fetch and display expenses on page load
-    window.onload = async function() {
-      try {
-        const response = await axios.get('/expenses'); // Fetch from backend
-        displayExpenses(response.data);
-      } catch (error) {
-        console.error('Error fetching expenses:', error);
+    const response = await axios.get('/expenses', {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    };
+    });
+    displayExpenses(response.data);
+  } catch (error) {
+    console.error('Error fetching expenses:', error);
+  }
+};
 
     // Handle form submission
     document.getElementById('expenseForm').onsubmit = async function(event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      const amount = document.getElementById('amount').value;
-      const description = document.getElementById('description').value;
-      const category = document.getElementById('category').value;
+  const amount = document.getElementById('amount').value;
+  const description = document.getElementById('description').value;
+  const category = document.getElementById('category').value;
 
-      try {
-        const response = await axios.post('/expenses', {
-          amount, description, category
-        });
-
-        displayExpenses([response.data]); // Display the new expense
-      } catch (error) {
-        console.error('Error adding expense:', error);
+  try {
+    const response = await axios.post(
+      '/expenses',
+      { amount, description, category },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       }
-    };
+    );
+    displayExpenses([response.data]); // Display the new expense
+  } catch (error) {
+    console.error('Error adding expense:', error);
+  }
+};
 
     // Display expenses in the list
     function displayExpenses(expenses) {
@@ -83,17 +94,24 @@
         expenseList.appendChild(listItem);
       });
     }
-
     // Delete expense function
   async function deleteExpense(id) {
-    try {
-      await axios.delete(`/expenses/${id}`);
-      alert('Expense deleted successfully');
-      window.location.reload(); // Reload to update the list
-    } catch (error) {
-      console.error('Error deleting expense:', error);
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`/expenses/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        alert('Expense deleted successfully');
+        
+        // Refresh the expense list after deletion
+        window.location.reload();
+    
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+      }
     }
-  }
   </script>
 </body>
 </html>

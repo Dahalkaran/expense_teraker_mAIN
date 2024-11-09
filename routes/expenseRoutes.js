@@ -2,11 +2,11 @@ const express = require('express');
 const path = require('path');
 const expenseController = require('../controllers/expenseController');
 const router = express.Router();
-
-router.post('/expenses', expenseController.addExpense);
-router.get('/expenses', expenseController.getExpenses);
+const authenticateToken = require('../middleware/authMiddleware');
+router.post('/expenses',authenticateToken, expenseController.addExpense);
+router.get('/expenses', authenticateToken, expenseController.getExpenses);
 router.get('/expenses/view', (req, res) => {
     res.sendFile(path.join(__dirname, '../views', 'expense.html'));
   });
-  router.delete('/expenses/:id', expenseController.deleteExpense);
+  router.delete('/expenses/:id',authenticateToken, expenseController.deleteExpense);
 module.exports = router;
