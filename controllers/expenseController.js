@@ -25,7 +25,7 @@ exports.getExpenses = async (req, res) => {
 
   try {
     // Fetch only the expenses belonging to the authenticated user
-    const expenses = await Expense.findAll({ where: { userId } });
+    const expenses = await Expense.findAll({ where: { UserId: userId } });
     res.status(200).json(expenses);
   } catch (error) {
     console.error('Error fetching expenses:', error);

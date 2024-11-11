@@ -3,21 +3,30 @@ const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const purchase=require('./routes/purchaseRoutes');
+// const User = require('./models/User');  
+// const Order = require('./models/order');
+// const Expense = require('./models/expense');
 //const { FORCE } = require('sequelize/lib/index-hints');
+const cors = require('cors');
 
 const app = express();
-
+require('dotenv').config();
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); // Built-in middleware to parse JSON
 app.use(express.static('public'));
 app.use(express.static('views'));
 
+app.use(cors())
+
 // Routes
 app.use(userRoutes);
 app.use(expenseRoutes);
+app.use(purchase);
 
 // Sync the database and start the server
+//{ force: true }
 sequelize.sync()
   .then(() => {
     console.log('Database synced');

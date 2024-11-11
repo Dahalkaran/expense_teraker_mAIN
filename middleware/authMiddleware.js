@@ -8,7 +8,7 @@ const authenticateToken = (req, res, next) => {
     return res.status(403).json({ error: 'Access denied. No token provided.' });
   }
 
-  jwt.verify(token, 'your_jwt_secret', (err, user) => { // Replace 'your_jwt_secret' with your actual JWT secret
+  jwt.verify(token,'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv', (err, user) => { // Replace 'your_jwt_secret' with your actual JWT secret
     if (err) {
       return res.status(403).json({ error: 'Invalid token.' });
     }

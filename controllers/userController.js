@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // JWT secret (store in environment variables for production)
-const JWT_SECRET = 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv'; // Replace with your secret or use process.env.JWT_SECRET
+const JWT_SECRET = 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv';
 
 // Signup controller to create a new user
 exports.signup = async (req, res) => {
