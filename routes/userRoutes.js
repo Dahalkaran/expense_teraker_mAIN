@@ -1,5 +1,6 @@
 const express = require('express');
 const userController = require('../controllers/userController');
+const { getLeaderboard } = require('../controllers/leaderbord');
 const router = express.Router();
 
 // Serve the signup HTML file on GET request
@@ -15,4 +16,7 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', userController.login);
+
+router.get('/leaderboard', getLeaderboard);
+
 module.exports = router;

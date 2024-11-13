@@ -32,34 +32,45 @@
   <!-- Expenses list -->
   <h2>Expenses</h2>
   <ul id="expenseList"></ul>
-
+  <button id="leaderboardBtn" style="display: none;">Leaderboard</button>
   <script>
    
 
     window.onload = async function() {
-  try {
-    const token = localStorage.getItem('token'); // Retrieve the token
+
+    const token = localStorage.getItem('token');
     if (!token) {
       alert('Please log in first');
       window.location.href = '/login';
       return;
     }
-
-    const response = await axios.get('/expenses', {
-      headers: {
-        Authorization: `Bearer ${token}`
+    if (localStorage.getItem('isPremium') === 'true') {
+            document.getElementById('buyPremiumBtn').style.display = 'none';
+            displayPremiumBadge();
+            document.getElementById('leaderboardBtn').style.display = 'block';
+        }
+    // const response = await axios.get('/expenses', {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`
+    //   }
+    // });
+    
+    try {
+        const response = await axios.get('/expenses', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        displayExpenses(response.data);
+      } catch (error) {
+        console.error('Error fetching expenses:', error);
       }
-    });
-    displayExpenses(response.data);
-  } catch (error) {
-    console.error('Error fetching expenses:', error);
-  }
+
+    //displayExpenses(response.data);
 };
 
     // Handle form submission
     document.getElementById('expenseForm').onsubmit = async function(event) {
   event.preventDefault();
-  console.log('gvgvgvghvjjhjjhbhjb')
+  //console.log('gvgvgvghvjjhjjhbhjb');
   const amount = document.getElementById('amount').value;
   const description = document.getElementById('description').value;
   const category = document.getElementById('category').value;
@@ -118,29 +129,120 @@
     }
     //for razorpay
     document.getElementById('buyPremiumBtn').onclick = async function () {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('/create_order', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  console.log(response);
-    //const order = response.data.order;
-    var options = {
-      "key": response.data.key_id, 
-      "order_id":response.data.order.id,
-      
-      "handler":async function (response) {
-        // Handle successful payment
-        await axios.post('/verify-payment',{
-        order_id: options.order_id,
-        payment_id: response.razorpay_payment_id,},
-       { headers: {Authorization: `Bearer ${token}`}
-      });
-      alert("You are a Premium User")
-    },
+  const token = localStorage.getItem('token');
 
+  try {
+    const response = await axios.get('/create_order', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const order = response.data.order;
+
+    var options = {
+      "key": response.data.key_id,
+      "order_id": order.id,
+      "handler": async function (paymentResponse) {
+        // Successful payment handler
+        const token = localStorage.getItem('token');
+    try {
+        // Notify your backend of the successful payment
+        const response = await axios.post('/payment/webhook', {
+            order_id: order.id,
+            payment_id: paymentResponse.razorpay_payment_id,
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Retrieve the updated token with the premium status
+        const newToken = response.data.token;
+        
+        // Store the updated token in localStorage
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('isPremium', 'true');
+         
+        alert("You are now a Premium User!");
+
+        // Update the UI for premium status
+        document.getElementById('buyPremiumBtn').style.display = 'none';
+        displayPremiumBadge();
+        document.getElementById('leaderboardBtn').style.display = 'block';
+    } catch (error) {
+        console.error("Error processing payment success:", error);
+    }},
+      "modal": {
+        "ondismiss": async function () {
+          // Payment not completed alert with a retry option
+          const tryAgain = confirm("Payment not completed. Would you like to try again?");
+          if (tryAgain) {
+            // Retry creating the order and marking as FAILED in database
+            await axios.post('/payment/webhook', {
+              order_id: order.id,
+              payment_id: null // Indicate failure with no payment ID
+            }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            // Call the function again to reopen Razorpay modal
+            document.getElementById('buyPremiumBtn').click();
+          } else {
+            // Mark the order as failed if user doesn't want to retry
+            await axios.post('/payment/webhook', {
+              order_id: order.id,
+              payment_id: null
+            }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("Order marked as failed. Please try again later.");
+          }
+        }
+      }
     };
+
     const rzp = new Razorpay(options);
-      rzp.open();
+    rzp.open();
+  } catch (error) {
+    console.error("Error initiating payment:", error);
+    alert("There was an error initiating the payment. Please try again later.");
+  }
+};
+function displayPremiumBadge() {
+    const badge = document.createElement('div');
+    badge.innerText = 'You are a Premium User!';
+    badge.style.color = 'gold';
+    badge.style.position = 'absolute';
+    badge.style.right = '20px';
+    badge.style.top = '20px';
+    document.body.appendChild(badge);
+}
+
+// Show leaderboard on button click
+document.getElementById('leaderboardBtn').onclick = async function () {
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await axios.get('/leaderboard', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Display leaderboard data
+      displayLeaderboard(response.data);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+    }
+  };
+
+// Function to display leaderboard data
+function displayLeaderboard(leaderboard) {
+    const leaderboardContainer = document.createElement('div');
+    leaderboardContainer.innerHTML = '<h2>Leaderboard</h2>';
+
+    const leaderboardList = document.createElement('ul');
+    leaderboard.forEach(user => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${user.name} (${user.email}) - Total Spent: ${user.totalSpent}`;
+      leaderboardList.appendChild(listItem);
+    });
+
+    leaderboardContainer.appendChild(leaderboardList);
+    document.body.appendChild(leaderboardContainer);
   }
   </script>
 </body>

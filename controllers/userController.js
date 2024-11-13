@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Order=require('../models/order')
 
 // JWT secret (store in environment variables for production)
 const JWT_SECRET = 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv';
@@ -45,10 +46,20 @@ exports.login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({ error: 'Incorrect password' });
     }
+    
+    const successfulOrder = await Order.findOne({ 
+      where: { 
+        UserId: user.id, 
+        status: 'SUCCESS' 
+      } 
+    });
+
+
+    const buyPremium = successfulOrder ? true : false;
 
     // Generate JWT token for the authenticated user
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-
+    const token = jwt.sign({ id: user.id, email: user.email,buyPremium }, JWT_SECRET);
+    console.log(token);
     res.status(200).json({ message: 'Login success', token });
   } catch (error) {
     console.error('Error during login:', error);

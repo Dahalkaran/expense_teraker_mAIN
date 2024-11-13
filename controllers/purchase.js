@@ -1,7 +1,7 @@
 const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const User = require('../models/User');
-
+const jwt = require('jsonwebtoken');
 exports.createOrder = async (req, res) => {
     try {
         // Find the user instance using Sequelize
@@ -40,4 +40,47 @@ exports.createOrder = async (req, res) => {
         console.error("Unexpected error:", err);
         res.status(403).json({ message: 'Something went wrong', error: err });
     }
+};
+
+
+
+exports.paymentWebhook = async (req, res) => {
+  //console.log("Headers received:", req.headers);
+  //console.log("Webhook received:", req.body);
+
+  try {
+      const { order_id, payment_id } = req.body;
+
+      if (!order_id) {
+          return res.status(400).json({ message: 'Invalid webhook payload: missing order_id' });
+      }
+
+      const order = await Order.findOne({ where: { orderid: order_id } });
+
+      if (!order) {
+          console.log("Order not found for order_id:", order_id);
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Simplified logic for testing
+      const paymentStatus = payment_id ? 'SUCCESS' : 'FAILED';
+       
+      await order.update({
+          status: paymentStatus,
+          paymentid: payment_id || null,
+      });
+      if (paymentStatus === 'SUCCESS') {
+        const user = await User.findByPk(order.UserId);
+        const token = jwt.sign({ id: user.id, buyPremium: true }, 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv');
+        console.log(token);
+        return res.status(200).json({ message: 'Order successful', token });
+    } else {
+        return res.status(200).json({ message: 'Order failed' });
+    } 
+      console.log(`Order status updated to ${paymentStatus} for order_id:`, order_id);
+      return res.status(200).json({ message: `Order status updated to ${paymentStatus}` });
+  } catch (err) {
+      console.error("Error processing payment webhook:", err);
+      return res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
 };

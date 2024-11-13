@@ -4,10 +4,8 @@ const sequelize = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const purchase=require('./routes/purchaseRoutes');
-// const User = require('./models/User');  
-// const Order = require('./models/order');
-// const Expense = require('./models/expense');
-//const { FORCE } = require('sequelize/lib/index-hints');
+
+
 const cors = require('cors');
 
 const app = express();
@@ -27,6 +25,7 @@ app.use(purchase);
 
 // Sync the database and start the server
 //{ force: true }
+
 sequelize.sync()
   .then(() => {
     console.log('Database synced');
