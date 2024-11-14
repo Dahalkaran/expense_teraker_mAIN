@@ -1,5 +1,5 @@
 const Expense = require('../models/expense');
-
+const User=require('../models/User')
 exports.addExpense = async (req, res) => {
   const { amount, description, category } = req.body;
   const userId = req.user.id; // Get user ID from JWT payload
@@ -7,11 +7,20 @@ exports.addExpense = async (req, res) => {
   try {
     // Create a new expense associated with the authenticated user
     const expense = await Expense.create({ 
-      amount, 
+      amount,
       description, 
       category,
       UserId: userId // Use the correct field name
-    });;
+    });
+     
+    const user = await User.findByPk(userId);
+    if (user) {
+      user.totalSpent = user.totalSpent || 0;
+      user.totalSpent += amount; // Add the expense amount to totalSpent
+      await user.save(); // Save the updated user
+    }
+
+
     res.status(201).json(expense);
   } catch (error) {
     console.error('Error adding expense:', error);
