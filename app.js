@@ -4,15 +4,16 @@ const sequelize = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const purchase=require('./routes/purchaseRoutes');
-
+const password=require('./routes/passwordRoutes')
 
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 require('dotenv').config();
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.json()); // Built-in middleware to parse JSON
+app.use(express.json()); 
 app.use(express.static('public'));
 app.use(express.static('views'));
 
@@ -22,7 +23,7 @@ app.use(cors())
 app.use(userRoutes);
 app.use(expenseRoutes);
 app.use(purchase);
-
+app.use(password);
 // Sync the database and start the server
 //{ force: true }
 

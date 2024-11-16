@@ -1,31 +1,28 @@
+const sequelize = require('../config/database');
 const Expense = require('../models/expense');
 const User=require('../models/User')
 exports.addExpense = async (req, res) => {
   const { amount, description, category } = req.body;
-  const userId = req.user.id; // Get user ID from JWT payload
+  const userId = req.user.id;
 
-  try {
-    // Create a new expense associated with the authenticated user
-    const expense = await Expense.create({ 
-      amount,
-      description, 
-      category,
-      UserId: userId // Use the correct field name
-    });
-     
-    const user = await User.findByPk(userId);
-    if (user) {
-      user.totalSpent = user.totalSpent || 0;
-      user.totalSpent += amount; // Add the expense amount to totalSpent
-      await user.save(); // Save the updated user
-    }
+  // Start a transaction without await
+  const t = await sequelize.transaction();
+try {
+  const expense = await Expense.create(
+    { amount, description, category, UserId: userId },
+    { transaction: t }
+  );
 
+  const user = await User.findByPk(userId, { transaction: t });
+  user.totalSpent += Number(amount);
+  await user.save({ transaction: t });
 
-    res.status(201).json(expense);
-  } catch (error) {
-    console.error('Error adding expense:', error);
-    res.status(500).json({ message: 'Error adding expense' });
-  }
+  await t.commit(); // All operations succeeded, so commit the transaction
+  res.status(201).json(expense);
+} catch (error) {
+  await t.rollback(); // An error occurred, so rollback the transaction
+  res.status(500).json({ message: 'Error adding expense' });
+}
 };
 
 
@@ -44,14 +41,35 @@ exports.getExpenses = async (req, res) => {
 
 exports.deleteExpense = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.id;
+
+  // Start a transaction for deleting an expense and updating totalSpent
+  const t = await sequelize.transaction();
+
   try {
-    const result = await Expense.destroy({ where: { id } });
-    if (result) {
-      res.status(200).json({ message: 'Expense deleted successfully' });
-    } else {
-      res.status(404).json({ message: 'Expense not found' });
+    // Find the expense to be deleted
+    const expense = await Expense.findOne({ where: { id, UserId: userId }, transaction: t });
+
+    if (!expense) {
+      // Rollback transaction and respond if expense not found
+      await t.rollback();
+      return res.status(404).json({ message: 'Expense not found' });
     }
+
+    // Find the user and subtract the expense amount from totalSpent
+    const user = await User.findByPk(userId, { transaction: t });
+    user.totalSpent -= Number(expense.amount);
+    await user.save({ transaction: t });
+
+    // Delete the expense within the transaction
+    await Expense.destroy({ where: { id }, transaction: t });
+
+    // Commit the transaction if all operations succeed
+    await t.commit();
+    res.status(200).json({ message: 'Expense deleted successfully' });
   } catch (error) {
+    // Rollback the transaction if an error occurs
+    await t.rollback();
     console.error('Error deleting expense:', error);
     res.status(500).json({ message: 'Error deleting expense' });
   }

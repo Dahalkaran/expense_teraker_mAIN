@@ -19,7 +19,13 @@
     <button type="submit">Log In</button>
     <p id="error-message" style="color: red; display: none;"></p>
   </form>
-
+  <form id="forgotPasswordForm" style="display: none;">
+    <label for="forgot-email">Enter your email:</label>
+    <input type="email" id="forgot-email" name="email" required>
+    <button type="submit">Submit</button>
+    <p id="forgot-error-message" style="color: red; display: none;"></p>
+  </form>
+  <button id="forgotPasswordBtn">Forgot Password?</button>
   <script>
     // Login form submission handler
     const loginForm = document.getElementById('loginForm');
@@ -56,6 +62,29 @@
         errorMessage.style.display = 'block';
       }
     };
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+
+forgotPasswordBtn.onclick = function() {
+  forgotPasswordForm.style.display = 'block';
+};
+
+forgotPasswordForm.onsubmit = async function(event) {
+  event.preventDefault();
+
+  const email = document.getElementById('forgot-email').value;
+  const forgotErrorMessage = document.getElementById('forgot-error-message');
+  forgotErrorMessage.style.display = 'none';
+
+  try {
+    const response = await axios.post('/forgotpassword', { email });
+    alert('A password reset email has been sent if the email exists in our system.');
+  } catch (error) {
+    // Show specific error message if email does not exist
+    forgotErrorMessage.textContent = error.response?.data?.error || 'An error occurred. Please try again.';
+    forgotErrorMessage.style.display = 'block';
+  }
+};
   </script>
 </body>
 </html>

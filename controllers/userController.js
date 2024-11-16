@@ -2,29 +2,29 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Order=require('../models/order')
-
+const sequelize = require('../config/database');
 // JWT secret (store in environment variables for production)
 const JWT_SECRET = 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv';
 
 // Signup controller to create a new user
 exports.signup = async (req, res) => {
   const { name, email, password } = req.body;
+  const t = await sequelize.transaction();
 
   try {
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { email }, transaction: t });
     if (existingUser) {
-      // Send a specific error response if the email is taken
+      await t.rollback();
       return res.status(400).json({ error: 'Email is already registered' });
     }
 
-    // Hash the password before saving the user
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user if email is not taken
-    const newUser = await User.create({ name, email, password: hashedPassword });
+    const newUser = await User.create({ name, email, password: hashedPassword }, { transaction: t });
+    await t.commit();
 
     res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
+    await t.rollback();
     console.error('Error creating user:', error);
     res.status(400).json({ message: 'Error creating user' });
   }
