@@ -24,8 +24,8 @@ const sendForgotPasswordEmail = async (req, res) => {
     const resetUrl = `http://localhost:3000/resetpassword/${requestId}`;
     const defaultClient = SibApiV3Sdk.ApiClient.instance;
     const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = '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';
-
+    apiKey.apiKey = process.env.SENDINBLUE_API_KEY;
+    // console.log("dkzjnsdkjdskjvncdsjnvkjsdnvkjjdsnvkjnds       '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'     ", )
     const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     const sendSmtpEmail = {
       to: [{ email }],

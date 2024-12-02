@@ -5,6 +5,37 @@
   <title>Expense Tracker</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    #expenseFilters button {
+  margin: 5px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#expenseFilters button:hover {
+  background-color: #0056b3;
+}
+
+#downloadBtn {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#downloadBtn:hover {
+  background-color: #218838;
+}
+
+  </style>
+
 </head>
 <body>
   <h1>Expense Tracker</h1>
@@ -33,6 +64,15 @@
   <h2>Expenses</h2>
   <ul id="expenseList"></ul>
   <button id="leaderboardBtn" style="display: none;">Leaderboard</button>
+  <!-- Filters for Daily, Weekly, and Monthly -->
+<div id="expenseFilters" style="display: none;">
+  <button onclick="filterExpenses('daily')">Daily</button>
+  <button onclick="filterExpenses('weekly')">Weekly</button>
+  <button onclick="filterExpenses('monthly')">Monthly</button>
+</div>
+<button id="downloadBtn" style="display: none;">Download Expenses</button>
+<h3>Download History</h3>
+<ul id="downloadHistory"></ul>
   <script>
    
 
@@ -45,10 +85,14 @@
       return;
     }
     if (localStorage.getItem('isPremium') === 'true') {
-            document.getElementById('buyPremiumBtn').style.display = 'none';
-            displayPremiumBadge();
-            document.getElementById('leaderboardBtn').style.display = 'block';
-        }
+  document.getElementById('buyPremiumBtn').style.display = 'none';
+  displayPremiumBadge();
+  fetchDownloadHistory();
+  document.getElementById('leaderboardBtn').style.display = 'block';
+  document.getElementById('expenseFilters').style.display = 'block';
+  document.getElementById('downloadBtn').style.display = 'block';
+}
+
     // const response = await axios.get('/expenses', {
     //   headers: {
     //     Authorization: `Bearer ${token}`
@@ -165,6 +209,8 @@
         document.getElementById('buyPremiumBtn').style.display = 'none';
         displayPremiumBadge();
         document.getElementById('leaderboardBtn').style.display = 'block';
+        document.getElementById('expenseFilters').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'block';
     } catch (error) {
         console.error("Error processing payment success:", error);
     }},
@@ -244,6 +290,67 @@ function displayLeaderboard(leaderboard) {
     leaderboardContainer.appendChild(leaderboardList);
     document.body.appendChild(leaderboardContainer);
   }
+  function filterExpenses(period) {
+  const token = localStorage.getItem('token');
+  axios
+    .get(`/expenses/filter/${period}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((response) => {
+      const expenseList = document.getElementById('expenseList');
+      expenseList.innerHTML = ''; // Clear current list
+      displayExpenses(response.data); // Display filtered expenses
+    })
+    .catch((error) => {
+      console.error(`Error fetching ${period} expenses:`, error);
+    });
+}
+document.getElementById('downloadBtn').onclick = async function () {
+  const token = localStorage.getItem('token');
+  
+  axios.get('/expenses/download', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((response) => {
+    if(response.status===200){
+      var a=document.createElement("a");
+      a.href=response.data.fileUrl;
+      a.download='myexpense.csv';
+      a.click();
+    }
+    else{
+      throw new Error(response.data.message);
+    }
+    fetchDownloadHistory();
+  }).catch( (error) =>{
+    console.error('Error downloading expenses:', error);
+  })
+};
+async function fetchDownloadHistory() {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.get('/expenses/download/history', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const historyList = document.getElementById('downloadHistory');
+      historyList.innerHTML = '';
+      response.data.fileUrls.forEach(file => {
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = file.fileUrl;
+        link.textContent = file.fileUrl;
+        link.target = '_blank';
+        listItem.appendChild(link);
+        historyList.appendChild(listItem);
+      });
+    } catch (error) {
+      console.error('Error fetching download history:', error);
+    }
+  }
+
+ 
+
+
   </script>
 </body>
 </html>

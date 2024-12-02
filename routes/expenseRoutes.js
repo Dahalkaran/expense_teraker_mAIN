@@ -9,4 +9,6 @@ router.get('/expenses/view', (req, res) => {
     res.sendFile(path.join(__dirname, '../views', 'expense.html'));
   });
   router.delete('/expenses/:id',authenticateToken, expenseController.deleteExpense);
-module.exports = router;
+ router.get('/expenses/download',authenticateToken,expenseController.download) 
+ router.get('/expenses/download/history', authenticateToken, expenseController.getDownloadHistory);
+ module.exports = router;

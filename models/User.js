@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-
+const FileURL = require('./fileUrl');
 const User = sequelize.define('User', {
   name: {
     type: DataTypes.STRING,
@@ -23,5 +23,7 @@ const User = sequelize.define('User', {
   },
 
 });
+User.hasMany(FileURL, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+FileURL.belongsTo(User, { foreignKey: 'UserId' });
 
 module.exports = User;

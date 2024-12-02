@@ -4,8 +4,9 @@ const User = require('../models/User');
 const Order=require('../models/order')
 const sequelize = require('../config/database');
 // JWT secret (store in environment variables for production)
-const JWT_SECRET = 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv';
-
+const JWT_SECRET ='ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv'
+//process.env.JWT_SECRET;
+console.log("kmmkmbkm ksmkmomomoiomom oio oim oo ",JWT_SECRET);
 // Signup controller to create a new user
 exports.signup = async (req, res) => {
   const { name, email, password } = req.body;

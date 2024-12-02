@@ -2,6 +2,8 @@ const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const sequelize = require('../config/database');
+
 exports.createOrder = async (req, res) => {
     const t = await sequelize.transaction();
     try {
@@ -10,10 +12,10 @@ exports.createOrder = async (req, res) => {
         await t.rollback();
         return res.status(404).json({ message: 'User not found' });
       }
-  
+             // console.log(process.env.RAZORPAY_KEY_ID,"  kldsmklvmddmmmmmmmmmmmm")
       const rzp = new Razorpay({
-        key_id: 'rzp_test_FZvOflrYZjXxJ6',
-        key_secret: '1S0HNmtW0S45amqOm8ViOWFF'
+        key_id:'rzp_test_VhmGyzQpzudNO9' ,// process.env.RAZORPAY_KEY_ID,
+        key_secret: 'fZyfSs0KjrC58MNjdIesvjeR',//process.env.RAZORPAY_KEY_SECRET,
       });
       const amount = 50000;
   

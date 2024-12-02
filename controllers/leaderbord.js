@@ -9,7 +9,7 @@ exports.getLeaderboard = async (req, res) => {
         attributes: ['id','name', 'email', 'totalSpent'], // Fetch only id, email, and totalSpent
         order: [['totalSpent', 'DESC']]  // Order by totalSpent in descending order
       });
-     //console.log(leaderboard);
+     console.log(leaderboard);
       res.status(200).json(leaderboard);
    } catch (error) {
           console.error('Error fetching leaderboard:', error);
