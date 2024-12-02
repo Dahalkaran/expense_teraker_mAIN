@@ -62,6 +62,13 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Expenses list -->
   <h2>Expenses</h2>
+  <label for="itemsPerPage">Expenses per page:</label>
+<select id="itemsPerPage">
+  <option value="5">5</option>
+  <option value="10" selected>10</option>
+  <option value="20">20</option>
+  <option value="40">40</option>
+</select>
   <ul id="expenseList"></ul>
   <button id="leaderboardBtn" style="display: none;">Leaderboard</button>
   <!-- Filters for Daily, Weekly, and Monthly -->
@@ -82,12 +89,14 @@
   <script>
    let currentPage = 1;
     let totalPages = 1;
-
+    const itemsPerPage = localStorage.getItem('itemsPerPage') || 10;
+    document.getElementById('itemsPerPage').value = itemsPerPage;
     async function fetchExpenses(page) {
       const token = localStorage.getItem('token');
+      const perPage = localStorage.getItem('itemsPerPage') || 10;
 
       try {
-        const response = await axios.get(`/expenses?page=${page}`, {
+        const response = await axios.get(`/expenses?page=${page}&perPage=${perPage}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -136,7 +145,7 @@
 
     //displayExpenses(response.data);
 
-    await fetchExpenses(1);
+     fetchExpenses(1);
 };
 
     // Handle form submission
@@ -195,6 +204,11 @@
     document.getElementById('nextPage').onclick = () => {
       if (currentPage < totalPages) fetchExpenses(currentPage + 1);
     };
+    document.getElementById('itemsPerPage').onchange = function () {
+    const selectedValue = this.value;
+    localStorage.setItem('itemsPerPage', selectedValue); 
+    fetchExpenses(1); 
+  };
 
     // Delete expense function
   async function deleteExpense(id) {

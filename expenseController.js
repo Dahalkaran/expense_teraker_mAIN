@@ -36,17 +36,17 @@ try {
 exports.getExpenses = async (req, res) => {
   const userId = req.user.id; // Get user ID from JWT payload
   const page = parseInt(req.query.page) || 1; // Current page, default to 1
-  const limit = 3; // Number of items per page
-  const offset = (page - 1) * limit;
+  const perPage = parseInt(req.query.perPage) || 10; 
+  
   try {
     const { count, rows: expenses } = await Expense.findAndCountAll({
       where: { UserId: userId },
-      limit: limit,
-      offset: offset,
+      limit: perPage,
+      offset: (page-1)*perPage,
     });
 
-    const totalPages = Math.ceil(count / limit);
-    res.status(200).json({ expenses, totalPages, currentPage: page });
+    const totalPages = Math.ceil(count / perPage);
+    res.status(200).json({ expenses, totalPages});
   } catch (error) {
     console.error('Error fetching expenses:', error);
     res.status(500).json({ message: 'Error fetching expenses' });
