@@ -65,14 +65,42 @@
   <ul id="expenseList"></ul>
   <button id="leaderboardBtn" style="display: none;">Leaderboard</button>
   <!-- Filters for Daily, Weekly, and Monthly -->
-<div id="expenseFilters" style="display: none;">
+  <div id="paginationControls">
+    <button id="prevPage">Previous</button>
+    <span id="currentPage"></span>
+    <button id="nextPage">Next</button>
+  </div>
+
+  <div id="expenseFilters" style="display: none;">
   <button onclick="filterExpenses('daily')">Daily</button>
   <button onclick="filterExpenses('weekly')">Weekly</button>
   <button onclick="filterExpenses('monthly')">Monthly</button>
 </div>
 <button id="downloadBtn" style="display: none;">Download Expenses</button>
+<h3>Download History</h3>
+<ul id="downloadHistory"></ul>
   <script>
-   
+   let currentPage = 1;
+    let totalPages = 1;
+
+    async function fetchExpenses(page) {
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await axios.get(`/expenses?page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const { expenses, totalPages: total } = response.data;
+        totalPages = total;
+        currentPage = page;
+
+        displayExpenses(expenses);
+        updatePaginationControls();
+      } catch (error) {
+        console.error('Error fetching expenses:', error);
+      }
+    }
 
     window.onload = async function() {
 
@@ -85,6 +113,7 @@
     if (localStorage.getItem('isPremium') === 'true') {
   document.getElementById('buyPremiumBtn').style.display = 'none';
   displayPremiumBadge();
+  fetchDownloadHistory();
   document.getElementById('leaderboardBtn').style.display = 'block';
   document.getElementById('expenseFilters').style.display = 'block';
   document.getElementById('downloadBtn').style.display = 'block';
@@ -96,16 +125,18 @@
     //   }
     // });
     
-    try {
-        const response = await axios.get('/expenses', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        displayExpenses(response.data);
-      } catch (error) {
-        console.error('Error fetching expenses:', error);
-      }
+    // try {
+    //     const response = await axios.get('/expenses', {
+    //       headers: { Authorization: `Bearer ${token}` }
+    //     });
+    //     displayExpenses(response.data);
+    //   } catch (error) {
+    //     console.error('Error fetching expenses:', error);
+    //   }
 
     //displayExpenses(response.data);
+
+    await fetchExpenses(1);
 };
 
     // Handle form submission
@@ -126,7 +157,8 @@
         }
       }
     );
-    displayExpenses([response.data]); // Display the new expense
+   // displayExpenses([response.data]); // Display the new expense
+   fetchExpenses(currentPage);
   } catch (error) {
     console.error('Error adding expense:', error);
   }
@@ -135,19 +167,35 @@
     // Display expenses in the list
     function displayExpenses(expenses) {
       const expenseList = document.getElementById('expenseList');
+      expenseList.innerHTML = ''; // Clear current list
+
       expenses.forEach(expense => {
         const listItem = document.createElement('li');
         listItem.textContent = `${expense.amount} - ${expense.description} (${expense.category})`;
         listItem.setAttribute('data-id', expense.id);
-        // Add a delete button to each expense item
-         const deleteButton = document.createElement('button');
-         deleteButton.textContent = 'Delete';
-         deleteButton.onclick = () => deleteExpense(expense.id);
-         listItem.appendChild(deleteButton);
-       
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deleteExpense(expense.id);
+        listItem.appendChild(deleteButton);
+
         expenseList.appendChild(listItem);
       });
     }
+    function updatePaginationControls() {
+      document.getElementById('currentPage').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('prevPage').disabled = currentPage === 1;
+      document.getElementById('nextPage').disabled = currentPage === totalPages;
+    }
+
+    document.getElementById('prevPage').onclick = () => {
+      if (currentPage > 1) fetchExpenses(currentPage - 1);
+    };
+
+    document.getElementById('nextPage').onclick = () => {
+      if (currentPage < totalPages) fetchExpenses(currentPage + 1);
+    };
+
     // Delete expense function
   async function deleteExpense(id) {
       try {
@@ -159,11 +207,12 @@
         });
         alert('Expense deleted successfully');
         
-        // Refresh the expense list after deletion
-        const expenseItem = document.querySelector(`li[data-id="${id}"]`);
-    if (expenseItem) {
-      expenseItem.remove();
-    }
+    //     // Refresh the expense list after deletion
+    //     const expenseItem = document.querySelector(`li[data-id="${id}"]`);
+    // if (expenseItem) {
+    //   expenseItem.remove();
+    // }
+    fetchExpenses(currentPage);
   } catch (error) {
     console.error('Error deleting expense:', error);
   }
@@ -304,19 +353,49 @@ function displayLeaderboard(leaderboard) {
 }
 document.getElementById('downloadBtn').onclick = async function () {
   const token = localStorage.getItem('token');
-  try {
-    const response = await axios.get('/expenses/download', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const blob = new Blob([response.data], { type: 'text/csv' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = 'expenses.csv';
-    link.click();
-  } catch (error) {
+  
+  axios.get('/expenses/download', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((response) => {
+    if(response.status===200){
+      var a=document.createElement("a");
+      a.href=response.data.fileUrl;
+      a.download='myexpense.csv';
+      a.click();
+    }
+    else{
+      throw new Error(response.data.message);
+    }
+    fetchDownloadHistory();
+  }).catch( (error) =>{
     console.error('Error downloading expenses:', error);
-  }
+  })
 };
+async function fetchDownloadHistory() {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.get('/expenses/download/history', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const historyList = document.getElementById('downloadHistory');
+      historyList.innerHTML = '';
+      response.data.fileUrls.forEach(file => {
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = file.fileUrl;
+        link.textContent = file.fileUrl;
+        link.target = '_blank';
+        listItem.appendChild(link);
+        historyList.appendChild(listItem);
+      });
+    } catch (error) {
+      console.error('Error fetching download history:', error);
+    }
+  }
+
+ 
+
 
   </script>
 </body>

@@ -1,6 +1,13 @@
 const sequelize = require('../config/database');
 const Expense = require('../models/expense');
 const User=require('../models/User')
+const AWS=require('aws-sdk');
+const Userservises=require('../servises/userservises')
+const FileURL = require('../models/fileUrl');
+
+const S3servises=require('../servises/S3sevises')
+
+
 exports.addExpense = async (req, res) => {
   const { amount, description, category } = req.body;
   const userId = req.user.id;
@@ -28,11 +35,18 @@ try {
 
 exports.getExpenses = async (req, res) => {
   const userId = req.user.id; // Get user ID from JWT payload
-
+  const page = parseInt(req.query.page) || 1; // Current page, default to 1
+  const limit = 3; // Number of items per page
+  const offset = (page - 1) * limit;
   try {
-    // Fetch only the expenses belonging to the authenticated user
-    const expenses = await Expense.findAll({ where: { UserId: userId } });
-    res.status(200).json(expenses);
+    const { count, rows: expenses } = await Expense.findAndCountAll({
+      where: { UserId: userId },
+      limit: limit,
+      offset: offset,
+    });
+
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({ expenses, totalPages, currentPage: page });
   } catch (error) {
     console.error('Error fetching expenses:', error);
     res.status(500).json({ message: 'Error fetching expenses' });
@@ -74,3 +88,35 @@ exports.deleteExpense = async (req, res) => {
     res.status(500).json({ message: 'Error deleting expense' });
   }
 };
+exports.download=async(req,res)=>{
+  const t = await sequelize.transaction();
+  try{
+    const userId=req.user.id;
+    const expenses=await Expense.findAll({where:{UserId:userId}});
+    //console.log(expenses);
+    const stringifiedExpenses=JSON.stringify(expenses);
+    const filename=`Expenses${userId}/${new Date()}.txt`;
+    const fileUrl=await S3servises.uploadToS3(stringifiedExpenses, filename);
+    await FileURL.create({ fileUrl, UserId: userId }, { transaction: t });
+
+    await t.commit();
+    res.status(200).json({fileUrl, sucess:true})
+  }
+  catch(err){
+    await t.rollback();
+       res.status(500).json({fileUrl:'',success:false,err:err});
+  }
+ // const expenses=await req.user.getExpenses();
+  
+}
+exports.getDownloadHistory = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const fileUrls = await FileURL.findAll({ where: { UserId: userId } });
+    res.status(200).json({ fileUrls });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching download history' });
+  }
+};
+
