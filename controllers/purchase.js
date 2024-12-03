@@ -12,10 +12,9 @@ exports.createOrder = async (req, res) => {
         await t.rollback();
         return res.status(404).json({ message: 'User not found' });
       }
-             // console.log(process.env.RAZORPAY_KEY_ID,"  kldsmklvmddmmmmmmmmmmmm")
       const rzp = new Razorpay({
-        key_id:'rzp_test_VhmGyzQpzudNO9' ,// process.env.RAZORPAY_KEY_ID,
-        key_secret: 'fZyfSs0KjrC58MNjdIesvjeR',//process.env.RAZORPAY_KEY_SECRET,
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret:process.env.RAZORPAY_KEY_SECRET,
       });
       const amount = 50000;
   
@@ -64,8 +63,8 @@ exports.paymentWebhook = async (req, res) => {
       });
       if (paymentStatus === 'SUCCESS') {
         const user = await User.findByPk(order.UserId);
-        const token = jwt.sign({ id: user.id, buyPremium: true }, 'ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv');
-        console.log(token);
+        const token = jwt.sign({ id: user.id, buyPremium: true }, process.env.JWT_SECRET);
+        //console.log(token);
         return res.status(200).json({ message: 'Order successful', token });
     } else {
         return res.status(200).json({ message: 'Order failed' });

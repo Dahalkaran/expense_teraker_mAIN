@@ -35,11 +35,18 @@ try {
 
 exports.getExpenses = async (req, res) => {
   const userId = req.user.id; // Get user ID from JWT payload
-
+  const page = parseInt(req.query.page) || 1; // Current page, default to 1
+  const perPage = parseInt(req.query.perPage) || 10; 
+  
   try {
-    // Fetch only the expenses belonging to the authenticated user
-    const expenses = await Expense.findAll({ where: { UserId: userId } });
-    res.status(200).json(expenses);
+    const { count, rows: expenses } = await Expense.findAndCountAll({
+      where: { UserId: userId },
+      limit: perPage,
+      offset: (page-1)*perPage,
+    });
+
+    const totalPages = Math.ceil(count / perPage);
+    res.status(200).json({ expenses, totalPages});
   } catch (error) {
     console.error('Error fetching expenses:', error);
     res.status(500).json({ message: 'Error fetching expenses' });
