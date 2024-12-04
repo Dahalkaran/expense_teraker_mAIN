@@ -10,10 +10,15 @@ const morgan=require('morgan');
 const fs=require('fs');
 const path=require('path')
 const cors = require('cors');
+const https=require('https')
 require('dotenv').config();
 
 const app = express();
 require('dotenv').config();
+
+const privateKey=fs.readFileSync('server.key');
+const certificate=fs.readFileSync('server.cert');
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json()); 
@@ -56,5 +61,10 @@ sequelize.sync()
     app.listen(PORT, () => {
       console.log('Server is running on http://localhost:3000');
     });
+    // https.createServer({key: privateKey,cert: certificate},app)
+    // .listen(PORT, () => {
+    //   console.log('Server is running on https://localhost:3000');
+    // });
+
   })
   .catch(err => console.log(err));
