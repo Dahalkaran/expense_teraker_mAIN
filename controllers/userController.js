@@ -6,7 +6,9 @@ const sequelize = require('../config/database');
 // JWT secret (store in environment variables for production)
 const JWT_SECRET ='ykjdsivjnsnvhjcsbnvhjscbivnsxkjvnxkjcvnskjxjnvkjxncvkjnkjvncxnv'
 //process.env.JWT_SECRET;
-console.log("kmmkmbkm ksmkmomomoiomom oio oim oo ",JWT_SECRET);
+//
+//process.env.JWT_SECRET;
+//console.log("kmmkmbkm ksmkmomomoiomom oio oim  ",JWT_SECRET);
 // Signup controller to create a new user
 exports.signup = async (req, res) => {
   const { name, email, password } = req.body;
@@ -60,7 +62,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token for the authenticated user
     const token = jwt.sign({ id: user.id, email: user.email,buyPremium }, JWT_SECRET);
-    console.log(token);
+   // console.log(token);
     res.status(200).json({ message: 'Login success', token });
   } catch (error) {
     console.error('Error during login:', error);
