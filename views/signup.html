@@ -45,15 +45,16 @@
         });
 
         // Redirect or show a message on success
-        window.location.href = '/signup-success.html';
+        alert('Registration successful! Please log in.');
+        window.location.href = '/login.html';
       } catch (error) {
         //console.error('Error creating user:', error);
        
       // Display an error message if the email is already registered
       if (error.response && error.response.data && error.response.data.error) {
-          errorMessage.textContent = error.response.data.error;
+        alert(error.response.data.error);
         } else {
-          errorMessage.textContent = 'An error occurred. Please try again.';
+          alert('An error occurred. Please try again.');
         }
         errorMessage.style.display = 'block';
       }
