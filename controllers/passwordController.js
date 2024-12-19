@@ -20,7 +20,7 @@ const sendForgotPasswordEmail = async (req, res) => {
       isActive: true,
     });
 
-    const resetUrl = `http://localhost:3000/resetpassword/${requestId}`;
+    const resetUrl = `http://54.66.145.89:3000/resetpassword/${requestId}`;
     const defaultClient = SibApiV3Sdk.ApiClient.instance;
     const apiKey = defaultClient.authentications['api-key'];
     //console.log(process.env.SENDINBLUE_API_KEY);
