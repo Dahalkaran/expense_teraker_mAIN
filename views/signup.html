@@ -9,7 +9,7 @@
 </head>
 <body>
   <h1>Signup</h1>
-  <form id="signupForm" action="http://54.66.145.89:3000/signup" method="POST">
+  <form id="signupForm" action="/signup" method="POST">
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required>
     <br>
@@ -23,7 +23,7 @@
     <p id="error-message" style="color: red; display: none;"></p>
   </form>
   <p>
-    Already have an account? <a href="http://54.66.145.89:3000/login">Log in here</a>
+    Already have an account? <a href="/login">Log in here</a>
   </p>
   <script>
     document.getElementById('signupForm').onsubmit = async function(event) {
@@ -38,7 +38,7 @@
 
       try {
         // Send data to server using Axios
-        const response = await axios.post('http://54.66.145.89:3000/signup', {
+        const response = await axios.post('/signup', {
           name: name,
           email: email,
           password: password
@@ -46,7 +46,7 @@
 
         // Redirect or show a message on success
         alert('Registration successful! Please log in.');
-        window.location.href = 'http://54.66.145.89:3000/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         //console.error('Error creating user:', error);
        

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const password = document.getElementById('password').value;
   
       try {
-        const response = await axios.post('http://54.66.145.89:3000/login', { email, password });
+        const response = await axios.post('/login', { email, password });
   
         alert(response.data.message);
   
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       forgotErrorMessage.style.display = 'none';
   
       try {
-        const response = await axios.post('http://54.66.145.89:3000/forgotpassword', { email });
+        const response = await axios.post('/forgotpassword', { email });
         alert(
           'A password reset email has been sent if the email exists in our system.'
         );
