@@ -7,7 +7,7 @@ async function fetchExpenses(page) {
   const perPage = localStorage.getItem('itemsPerPage') || 10;
 
   try {
-    const response = await axios.get(`/expenses?page=${page}&perPage=${perPage}`, {
+    const response = await axios.get(`http://54.66.145.89:3000/expenses?page=${page}&perPage=${perPage}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -69,7 +69,7 @@ const category = document.getElementById('category').value;
 
 try {
 const response = await axios.post(
-  '/expenses',
+  'http://54.66.145.89:3000/expenses',
   { amount, description, category },
   {
     headers: {
@@ -125,7 +125,7 @@ fetchExpenses(1);
 async function deleteExpense(id) {
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`/expenses/${id}`, {
+    await axios.delete(`http://54.66.145.89:3000/expenses/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -147,7 +147,7 @@ document.getElementById('buyPremiumBtn').onclick = async function () {
 const token = localStorage.getItem('token');
 
 try {
-const response = await axios.get('/create_order', {
+const response = await axios.get('http://54.66.145.89:3000/create_order', {
   headers: { Authorization: `Bearer ${token}` },
 });
 const order = response.data.order;
@@ -160,7 +160,7 @@ var options = {
     const token = localStorage.getItem('token');
 try {
     // Notify your backend of the successful payment
-    const response = await axios.post('/payment/webhook', {
+    const response = await axios.post('http://54.66.145.89:3000/payment/webhook', {
         order_id: order.id,
         payment_id: paymentResponse.razorpay_payment_id,
     }, {
@@ -191,7 +191,7 @@ try {
       const tryAgain = confirm("Payment not completed. Would you like to try again?");
       if (tryAgain) {
         // Retry creating the order and marking as FAILED in database
-        await axios.post('/payment/webhook', {
+        await axios.post('http://54.66.145.89:3000/payment/webhook', {
           order_id: order.id,
           payment_id: null // Indicate failure with no payment ID
         }, {
@@ -201,7 +201,7 @@ try {
         document.getElementById('buyPremiumBtn').click();
       } else {
         // Mark the order as failed if user doesn't want to retry
-        await axios.post('/payment/webhook', {
+        await axios.post('http://54.66.145.89:3000/payment/webhook', {
           order_id: order.id,
           payment_id: null
         }, {
@@ -235,7 +235,7 @@ document.getElementById('leaderboardBtn').onclick = async function () {
 const token = localStorage.getItem('token');
 
 try {
-  const response = await axios.get('/leaderboard', {
+  const response = await axios.get('http://54.66.145.89:3000/leaderboard', {
     headers: { Authorization: `Bearer ${token}` }
   });
   
@@ -264,7 +264,7 @@ document.body.appendChild(leaderboardContainer);
 function filterExpenses(period) {
 const token = localStorage.getItem('token');
 axios
-.get(`/expenses/filter/${period}`, {
+.get(`http://54.66.145.89:3000/expenses/filter/${period}`, {
   headers: { Authorization: `Bearer ${token}` },
 })
 .then((response) => {
@@ -279,7 +279,7 @@ axios
 document.getElementById('downloadBtn').onclick = async function () {
 const token = localStorage.getItem('token');
 
-axios.get('/expenses/download', {
+axios.get('http://54.66.145.89:3000/expenses/download', {
 headers: { Authorization: `Bearer ${token}` },
 })
 .then((response) => {
@@ -300,7 +300,7 @@ console.error('Error downloading expenses:', error);
 async function fetchDownloadHistory() {
 const token = localStorage.getItem('token');
 try {
-  const response = await axios.get('/expenses/download/history', {
+  const response = await axios.get('http://54.66.145.89:3000/expenses/download/history', {
     headers: { Authorization: `Bearer ${token}` },
   });
   const historyList = document.getElementById('downloadHistory');
