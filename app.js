@@ -59,22 +59,20 @@ app.use(morgan('combined',{stream: accessLogStream}));
 // Sync the database and start the server
 //{ force: true }
 const PORT = process.env.PORT || 3000;
-// sequelize.sync()
-//   .then(() => {
-//     console.log('Database synced');
-//     app.listen(PORT, () => {
-//       console.log('Server is running on http://localhost:3000');
-//     });
-    
-
-//   })
-  //.catch(err => console.log(err));
-  sequelize.sync()
+sequelize.sync()
   .then(() => {
     console.log('Database synced');
-    https.createServer({ key: privateKey, cert: certificate }, app)
-      .listen(PORT, () => {
-        console.log(`Server is running on https://localhost:${PORT}`);
-      });
+    app.listen(PORT, () => {
+      console.log('Server is running on http://localhost:3000');
+    });
   })
-  .catch(err => console.log(err));
+  //.catch(err => console.log(err));
+  // sequelize.sync()
+  // .then(() => {
+  //   console.log('Database synced');
+  //   https.createServer({ key: privateKey, cert: certificate }, app)
+  //     .listen(PORT, () => {
+  //       console.log(`Server is running on https://localhost:${PORT}`);
+  //     });
+  // })
+  // .catch(err => console.log(err));
