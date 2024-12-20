@@ -30,7 +30,7 @@ const sendForgotPasswordEmail = async (req, res) => {
     const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     const sendSmtpEmail = {
       to: [{ email }],
-      sender: { email: 'dahalkaran27@gmail.com', name: 'Ghanashyam Dahal' },
+      sender: { email: 'pratima159sharma@gmail.com', name: 'Ghanashyam Dahal' },
       subject: 'Password Reset Request',
       htmlContent: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
     };
