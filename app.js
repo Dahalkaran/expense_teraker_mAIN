@@ -16,8 +16,8 @@ require('dotenv').config();
 const app = express();
 require('dotenv').config();
 
-const privateKey=fs.readFileSync('server.key');
-const certificate=fs.readFileSync('server.cert');
+//const privateKey=fs.readFileSync('server.key');
+//const certificate=fs.readFileSync('server.cert');
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
