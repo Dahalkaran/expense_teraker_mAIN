@@ -35,7 +35,6 @@ document.getElementById('buyPremiumBtn').style.display = 'none';
 displayPremiumBadge();
 fetchDownloadHistory();
 document.getElementById('leaderboardBtn').style.display = 'block';
-document.getElementById('expenseFilters').style.display = 'block';
 document.getElementById('downloadBtn').style.display = 'block';
 }
 
@@ -105,7 +104,7 @@ function displayExpenses(expenses) {
 function updatePaginationControls() {
   document.getElementById('currentPage').textContent = `Page ${currentPage} of ${totalPages}`;
   document.getElementById('prevPage').disabled = currentPage === 1;
-  document.getElementById('nextPage').disabled = currentPage === totalPages;
+  document.getElementById('nextPage').disabled = currentPage === totalPages ||currentPage === 0;
 }
 
 document.getElementById('prevPage').onclick = () => {
